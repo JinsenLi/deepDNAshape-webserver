@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="/deepdnashape/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>deepDNAshape Web Server</title>
+    <style>
+        #plotly-div {
+            /*border: 1px solid #ccc;*/
+            overflow: auto;
+            max-width: none;
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #plotly-div-wrapper {
+            position: relative;
+            border: 1px solid #ccc;
+            resize: both;         
+            overflow: auto;       
+            width: 600px;         
+            height: 400px;        
+            max-width: none;      
+            box-sizing: border-box;
+        }
+
+        .flex-container {
+            display: flex;  /* Enable flexbox */
+            justify-content: space-between;  /* Space out the children */
+            align-items: flex-start;  /* Align children to the top */
+        }
+        #data-form {
+            flex: 1;  /* Allow the form to grow and shrink as needed */
+            margin-right: 20px;  /* Add some spacing between the form and the plot */
+        }
+        #sequence {
+            font-family: 'Courier New', Courier, monospace;  /* This sets the font to a monospace type */
+        }
+        body {
+            overflow-x: auto;
+            padding-bottom: 50px;
+            position: relative;
+            font-family: "Lato", sans-serif;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10;  /* Ensure it's above other content */
+        }
+        .sticky-footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #333; /* Or any color you prefer */
+            color: white; /* Text color */
+            text-align: center;
+            padding: 10px 0; /* Adjust padding as needed */
+            z-index: 100; /* Ensures it appears above other content */
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar img {
+            height: 40px; /* Adjust as needed */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .sidebar {
+          height: calc(100% - 60px);
+          width: 0;
+          position: fixed;
+          z-index: 2;
+          top: 54px;
+          left: 0px;
+          background-color: #f4f4f4;
+          overflow-x: hidden;
+          transition: 0.4s;
+        }
+        .sidebar-content {
+          padding-left: 20px;
+          padding-top: 20px;
+        }
+        
+        .sidebar a {
+          padding: 10px 15px;
+          text-decoration: none;
+          font-size: 25px;
+          color: #333;
+          display: block;
+          transition: 0.3s;
+        }
+        
+        .sidebar a:hover {
+          color: #eb2337;
+        }
+        
+        .sidebar .closebtn {
+          position: absolute;
+          top: 0;
+          right: 25px;
+          font-size: 36px;
+          margin-left: 50px;
+        }
+        
+        .openbtn {
+          position: fixed;
+          top: 54px;
+          left: 0;
+          z-index: 3;
+          font-size: 24px;
+          cursor: pointer;
+          background-color: #ddd;
+          color: #333;
+          border: none;
+          padding: 10px;
+          display: none;
+        }
+        
+        .openbtn:hover {
+          background-color: #444;
+        }
+        
+        .container {
+            display: flex; /* Use flexbox */
+            flex-direction: row; /* Arrange children (sidebar and main content) in a row */
+            height: 100%; /* Adjust as needed */
+        }
+        #main {
+          transition: margin-left .5s;
+          padding: 16px;
+          padding-left: 0px;
+          margin-left: 0pt;
+          flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="container">
+        <!-- <div class="row">
+             Big header 
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="display-4">Deep DNAshape web-server</h1>
+                </div>
+            </div>
+        </div> -->
+        <!-- Input section on the left -->
+        <div id="mySidebar" class="sidebar">
+          <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+            <div class="sidebar-content">
+              <h3>Input <button id="example-button" class="btn btn-primary" onclick="enterExample()">Load example</button></h3>
+              <form id="data-form">
+                  <div class="form-group">
+                      <label for="sequence">Enter DNA Sequence(s) (A, C, G, T, N):</label>
+                      <textarea class="form-control" name="sequence" rows="10" id="sequence" pattern="^[ACGTN\n]+$"></textarea>
+                      <span id="sequence-warning" style="color: red; display: none;">Only characters A, C, G, T, N, and newline are allowed.</span>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="shape-features">Select Shape Feature:</label>
+                      <select class="form-control" name="shape-features" id="shape-features" required onchange="checkFeatureSelection()">
+                          <optgroup label="Groove Features" style="background-color: #e6f7ff;">
+                              <option value="MGW" style="font-weight: bold;">MGW</option>
+                              <option value="EP" style="font-weight: bold;">EP</option>
+                          </optgroup>
+                          <optgroup label="Intra-base-pair Features" style="background-color: #e6ffec;">
+                              <option value="Shear">Shear</option>
+                              <option value="Stretch">Stretch</option>
+                              <option value="Stagger">Stagger</option>
+                              <option value="Buckle">Buckle</option>
+                              <option value="ProT" style="font-weight: bold;">ProT</option>
+                              <option value="Opening">Opening</option>
+                          </optgroup>
+                          <optgroup label="Inter-base-pair Features" style="background-color: #fbffe6;">
+                              <option value="Shift">Shift</option>
+                              <option value="Slide">Slide</option>
+                              <option value="Rise">Rise</option>
+                              <option value="Tilt">Tilt</option>
+                              <option value="Roll" style="font-weight: bold;">Roll</option>
+                              <option value="HelT" style="font-weight: bold;">HelT</option>
+                          </optgroup>
+                      </select>
+                      <div class="form-check mt-2">
+                          <input type="checkbox" class="form-check-input" id="shape-fluctuations" name="shape-fluctuations">
+                          <label class="form-check-label" for="shape-fluctuations">For shape fluctuation values, check this box.</label>
+                      </div>
+                      
+                      
+                  </div>
+                  
+                  <div class="form-group">
+                      <label for="selector">Deep DNAshape layer (Default: 4)</label>
+                      <select class="form-control" name="selector" id="selector" required>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4" selected>4</option>
+                          <option value="5">5</option>
+                      </select>
+                  </div>
+
+                  <div class="form-group">
+                      <label for="file">Upload a .txt or .fasta/.fa file:</label>
+                      <input type="file" class="form-control-file" name="file" id="file">
+                  </div>
+
+                  <button type="button" class="btn btn-primary" onclick="handleFileUpload()">Upload File & Download Predictions</button>
+              </form>
+            </div>
+        </div>
+        <div id="main">
+          <div class="row">
+            <button class="openbtn" onclick="openNav()">☰ Input</button> 
+                <!-- Plotly figure on the right -->
+            <div class="col-12">
+                <h3>DNA shape profile</h3>
+                <div id="plotly-div-wrapper">
+                    <div id="plotly-div"></div>
+                    <!-- Loading Indicator -->
+                    <div id="loading-indicator" class="loading-overlay" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Wait for predicting...</p>
+                    </div>
+                </div>
+                <h4>If you use the Deep DNAshape webserver, please cite <a href="https://www.nature.com/articles/s41467-024-45191-5">Jinsen Li, Tsu-Pei Chiu, and Remo Rohs. Predicting DNA structure using a deep learning method. Nat. Commun. 15, 1243 (2024)</a></h4>
+            </div>
+        </div>
+        </div>
+    </div>
+
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+        Deep DNAshape webserver is maintained by <a href="https://www.rohslab.org/">The Rohs Lab</a> @ University of Southern California. It is free to use by anyone, including commercial users.
+    </div>
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          openNav(); // This function can be adjusted if needed to reflect the initial open state without animation.
+        });
+        function openNav() {
+          document.getElementById("mySidebar").style.width = "400px";
+          document.getElementById("main").style.marginLeft = "400px";
+          document.getElementsByClassName("openbtn")[0].style.display = "none"; // Hide the open button
+        }
+        
+        function closeNav() {
+          document.getElementById("mySidebar").style.width = "0";
+          document.getElementById("main").style.marginLeft= "0";
+          document.getElementsByClassName("openbtn")[0].style.display = "block"; // Show the open button again
+        }
+
+        function enterExample() {
+            // Set the sequence value
+            var sequence = "ACGTACGT\nACTTAAGT"; // Example sequence
+            document.getElementById('sequence').value = sequence;
+
+            submitData();
+            document.getElementById('example-button').disabled = true;
+        }
+
+        // Add event listener to the button
+        document.getElementById('sequence').addEventListener('input', submitData);
+        document.getElementById('data-form').addEventListener('submit', function(event) {
+            const sequence = document.getElementById('sequence').value;
+            const regex = /^[ACGTN\n]+$/;
+
+            if (!regex.test(sequence)) {
+                alert('Only characters A, C, G, T, N, and newline are allowed.');
+                event.preventDefault();  // stop the form submission
+            }
+        });
+        document.getElementById('selector').addEventListener('change', submitData);
+        document.getElementById('shape-fluctuations').addEventListener('change', submitData);
+        document.getElementById('shape-features').addEventListener('change', function() {
+            // Get the selected option's parent node (either optgroup or select)
+            var selectedParentNode = this.options[this.selectedIndex].parentNode;
+
+            // Get the last option of the "selector" dropdown
+            var selectorDropdown = document.getElementById('selector');
+            var lastOption = selectorDropdown.options[selectorDropdown.options.length - 1];
+
+            // Conditionally disable the last option based on the optgroup label
+            if (selectedParentNode.label === 'Inter-base-pair Features') {  // adjust the condition as needed
+                lastOption.disabled = true;
+                // Check if the last option is currently selected and change it
+                if (selectorDropdown.value === lastOption.value) {
+                    // Set to the first option or another suitable default
+                    selectorDropdown.value = selectorDropdown.options[0].value;
+                }
+            } else {
+                lastOption.disabled = false;
+            }
+        });
+        document.getElementById('shape-features').addEventListener('change', submitData);
+        function checkFeatureSelection() {
+            const selectedFeature = document.getElementById('shape-features').value;
+            const fluctuationsCheckbox = document.getElementById('shape-fluctuations');
+    
+            if (selectedFeature === "EP") {
+                fluctuationsCheckbox.checked = false;
+                fluctuationsCheckbox.disabled = true;
+            } else {
+                fluctuationsCheckbox.disabled = false;
+            }
+        }
+        function disableInput() {
+            document.getElementById('sequence').disabled = true;
+            document.getElementById('loading-indicator').style.display = 'flex';  // Use 'flex' to activate flexbox layout
+        }
+
+        function enableInput() {
+            document.getElementById('sequence').disabled = false;
+            document.getElementById('loading-indicator').style.display = 'none';
+        }
+        function submitData() {
+            const sequence = document.getElementById('sequence').value;
+            const regex = /^[ACGTN\n]+$/;
+            const warningElement = document.getElementById('sequence-warning');
+            const shapefluc = document.getElementById('shape-fluctuations').checked;
+
+            // Validate the sequence first
+            if (!regex.test(sequence)) {
+                warningElement.style.display = 'inline';  // display the warning
+                return;  // Exit the function, preventing the data from being sent
+            } else {
+                warningElement.style.display = 'none';  // hide the warning
+            }
+
+            //disableInput(); // Disable input when the request starts
+
+            let formData = new FormData(document.getElementById('data-form'));
+
+            fetch('./get_data', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Calculate width based on sequence length, e.g., 30 pixels per character
+                let plotWidth = data.x.length * 30;
+                let wrapper = document.getElementById('plotly-div-wrapper');
+                // Set a minimum width to ensure smaller sequences are still visible
+                if (plotWidth < 600) {
+                    plotWidth = 600;
+                }
+                const sequences = sequence.split('\n');
+                const traces = sequences.map((sequences, index) => ({
+                    x: data.x[index],
+                    y: data.y[index],
+                    type: 'line+marker',
+                    name: data.legends[index],
+                    text: data.text[index],
+                    error_y: {
+                        type: 'data',
+                        array: data.error_y[index],
+                        visible: shapefluc
+                    }
+                }));
+                let boxPlotData = data.x[0].map((xValue, i) => {
+                    return {
+                        y: data.y.map(sequence => sequence[i]), // Collect the i-th y-value from each sequence
+                        type: 'box',
+                        name: `Position ${xValue}` // You can customize the name as needed
+                    };
+                });
+                //console.log(boxPlotData);
+                var layout = {
+                    autosize: false,
+                    legend: {
+                        font: {
+                            family: 'Courier New, monospace',
+                        }
+                    },
+                    width: wrapper.clientWidth - 1,
+                    height: wrapper.clientHeight - 1, 
+                    title: 'Deep DNAshape Prediction',
+                    hovermode: 'closest',
+                    xaxis: {
+                        title: 'Position',
+                        zeroline: false
+                    },
+                    yaxis: {
+                        title: data.shape_feature,
+                        showline: true,
+                        linecolor: "lightgray",
+                        linewidth: 1,
+                        zeroline: false
+                    }
+                };
+                var customModeBarButtons = [{
+                        name: 'downloadData',
+                        title: 'Download Data',
+                        icon: Plotly.Icons.disk,  // Using a built-in Plotly icon. You can customize this.
+                        click: function(gd) {
+                            downloadData(gd);
+                        }
+                    },{name: 'togglePlotType',
+                        title: 'Toggle Plot Type',
+                        icon: Plotly.Icons.pencil, // You can choose an appropriate icon
+                        click: function(gd) {
+                            let currentType = gd.data[0].type;
+                            //console.log(currentType)
+                            if (currentType === 'line+marker') {
+                                // Switch to boxplot
+                                Plotly.newPlot('plotly-div', boxPlotData, layout, {editable: true, modeBarButtonsToAdd: customModeBarButtons, displayModeBar: true});
+                            } else {
+                                // Switch back to multi-sequence plot
+                                Plotly.newPlot('plotly-div', traces, layout, {editable: true, modeBarButtonsToAdd: customModeBarButtons, displayModeBar: true});
+                            }
+                        }},
+                    {   
+                        name: "downloadplotsvg",
+                        title: "Download plot as svg",
+                        icon: Plotly.Icons.camera,
+                        click: function(gd){
+                            Plotly.downloadImage(gd, {format: 'svg'})
+                        }
+                    }
+                ];
+                Plotly.newPlot('plotly-div', traces, layout, {editable: true, modeBarButtonsToAdd: customModeBarButtons, displayModeBar: true});
+            });
+        }
+        function downloadData(gd) {
+            const shapefluc = document.getElementById('shape-fluctuations').checked;
+            let dataToDownload;
+            
+            if (shapefluc){
+                dataToDownload = gd.data.map(trace => {
+                    return trace.y.map((yValue, i) => {
+                        let errorValue = trace.error_y.array[i];
+                        return yValue + "±" + errorValue; // Format each line
+                    });
+                });
+            }
+            else {
+                dataToDownload = gd.data.map(trace => trace.y); 
+            }
+
+            // Convert the data to a CSV format or another desired format
+            // const csvContent = "data:text/csv;charset=utf-8," + dataToDownload.join("\n");
+
+            // Create a temporary download link and trigger it
+            //const encodedUri = encodeURI(csvContent);
+
+            // Convert the data to a CSV format
+            const csvContent = dataToDownload.join("\n");
+
+            // Convert CSV string to Blob with UTF-8 encoding
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const encodedUri = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "predicted_values.csv");
+            document.body.appendChild(link);
+            
+            link.click();
+        }
+        function handleFileUpload() {
+            let formData = new FormData(document.getElementById('data-form'));
+
+            // Check if the file input is empty
+            const fileInput = document.getElementById('file');
+            if (!fileInput || fileInput.files.length === 0) {
+                alert("Please select a file to upload.");
+                return;
+            }
+
+            fetch('./upload_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.download_link) {
+                    window.location.href = data.download_link;  // Trigger download
+                } else {
+                    alert("There was an error processing the file.");
+                }
+            });
+        }
+        const resizeObserver = new ResizeObserver(() => {
+            let wrapper = document.getElementById('plotly-div-wrapper');
+            Plotly.relayout('plotly-div', {
+                width: wrapper.clientWidth - 1,
+                height: wrapper.clientHeight - 1
+            });
+        });
+        resizeObserver.observe(document.getElementById('plotly-div-wrapper'));
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

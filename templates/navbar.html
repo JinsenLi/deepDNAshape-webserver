@@ -1,0 +1,21 @@
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="{{ url_for('home') }}">Deep DNAshape</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            {% for item in nav_items %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for(item.endpoint) }}">{{ item.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="ml-auto">
+        <a href="https://www.usc.edu">
+            <img src="/deepdnashape/static/images/PrimaryLogotype-1024x219.png" alt="Logo" style="height: 40px;">
+        </a>
+    </div>
+</nav>
