@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <base href="/deepdnashape/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -110,6 +109,7 @@
         .sidebar-content {
           padding-left: 20px;
           padding-top: 20px;
+          padding-bottom: 20px;
         }
         
         .sidebar a {
@@ -184,7 +184,7 @@
               <form id="data-form">
                   <div class="form-group">
                       <label for="sequence">Enter DNA Sequence(s) (A, C, G, T, N):</label>
-                      <textarea class="form-control" name="sequence" rows="10" id="sequence" pattern="^[ACGTN\n]+$"></textarea>
+                      <textarea class="form-control" name="sequence" rows="10" id="sequence" pattern="^[ACGTN\n]+$">CGCGAATTCGCG</textarea>
                       <span id="sequence-warning" style="color: red; display: none;">Only characters A, C, G, T, N, and newline are allowed.</span>
                   </div>
 
@@ -253,7 +253,7 @@
                         <p>Wait for predicting...</p>
                     </div>
                 </div>
-                <h4>If you use the Deep DNAshape webserver, please cite <a href="https://www.nature.com/articles/s41467-024-45191-5">Jinsen Li, Tsu-Pei Chiu, and Remo Rohs. Predicting DNA structure using a deep learning method. Nat. Commun. 15, 1243 (2024)</a></h4>
+                <h6><br><br><br><br><br>If you use the Deep DNAshape webserver, please cite <a href="https://www.nature.com/articles/s41467-024-45191-5">Jinsen Li, Tsu-Pei Chiu, and Remo Rohs. Predicting DNA structure using a deep learning method. Nat. Commun. 15, 1243 (2024)</a></h6>
             </div>
         </div>
         </div>
@@ -268,7 +268,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-          openNav(); // This function can be adjusted if needed to reflect the initial open state without animation.
+            openNav();
+            var trace = [{
+                x: [0,1,2,3,4,5,6,7,8,9,10,11],
+                y: [5.432479382,5.586598396,5.689585686,5.600319862,4.687483788,3.837384224,3.837384224,4.687483788,5.600319862,5.689585686,5.586598396,5.432479382],
+                type: 'line+marker',
+                text: ["C", "G", "C", "G", "A", "A", "T", "T", "C", "G", "C", "G"],
+            }];
+            var layout = {
+                    autosize: false,
+                    legend: {
+                        font: {
+                            family: 'Courier New, monospace',
+                        }
+                    },
+                    width: 598,
+                    height: 398, 
+                    title: 'Example: Dickerson dodecamer<br>Start by typing sequence(s) in the left input box',
+                    hovermode: 'closest',
+                    xaxis: {
+                        title: 'Position',
+                        zeroline: false
+                    },
+                    yaxis: {
+                        title: "MGW (Å)",
+                        showline: true,
+                        linecolor: "lightgray",
+                        linewidth: 1,
+                        zeroline: false
+                    }
+                };
+            Plotly.newPlot('plotly-div', trace, layout, {editable: true, displayModeBar: true});
         });
         function openNav() {
           document.getElementById("mySidebar").style.width = "400px";
@@ -295,7 +325,7 @@
         document.getElementById('sequence').addEventListener('input', submitData);
         document.getElementById('data-form').addEventListener('submit', function(event) {
             const sequence = document.getElementById('sequence').value;
-            const regex = /^[ACGTN\n]+$/;
+            const regex = /^[ACGTN\n]+$/i;
 
             if (!regex.test(sequence)) {
                 alert('Only characters A, C, G, T, N, and newline are allowed.');
@@ -347,7 +377,7 @@
         }
         function submitData() {
             const sequence = document.getElementById('sequence').value;
-            const regex = /^[ACGTN\n]+$/;
+            const regex = /^[ACGTN\n]+$/i;
             const warningElement = document.getElementById('sequence-warning');
             const shapefluc = document.getElementById('shape-fluctuations').checked;
 
@@ -520,6 +550,7 @@
             });
         });
         resizeObserver.observe(document.getElementById('plotly-div-wrapper'));
+        
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
