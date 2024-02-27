@@ -24,7 +24,7 @@ app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 
 nav_items = [
     {"name": "Home", "endpoint": "home"},
-    {"name": "Manual", "endpoint": "manual"},
+    {"name": "Manual", "endpoint": "helpguide"},
     # Add more items as needed
 ]
 
@@ -40,9 +40,11 @@ def home():
 # Load manual content from JSON file
 with open('/srv/www/deepdnashape/manual/manual.json', 'r') as file:
     manual_content = json.load(file)
-@app.route('/manual')
-def manual():
-    return render_template('manual.html', nav_items=nav_items, content=manual_content)
+
+@app.route('/help')
+def helpguide():
+    return render_template('help.html', nav_items=nav_items, content=manual_content)
+
 
 # Show images
 @app.route('/images/<filename>')

@@ -58,6 +58,7 @@ class predictor:
 
     @Pyro4.expose
     def predictSeq(self, seq, feature, layer):
+        seq = seq.upper()
         if feature in self.bpstep_features:
             if layer >= 5:
                 return []
