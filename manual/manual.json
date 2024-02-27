@@ -2,12 +2,12 @@
     "introduction": {
         "title": "Introduction",
         "subsections": {
-            "sub_intro1": {
+            "overview": {
                 "title": "Overview",
                 "content": [{"type": "text", 
-                             "data": "The Deep DNAshape websever can be used for quickly checking 14 DNA shape features and 13 shape fluctuations for any sequences (one or many), using query tables pre-computed from <a href='https://www.biorxiv.org/content/10.1101/2023.10.22.563383v1.full.pdf'>Deep DNAshape</a> models. Compared to the deep learning model, using this webserver doesn't require downloading and installing tensorflow and running any codes. This web-server has pre-computed enough data from the Deep DNAshape model for instantaneously prediciton."},
+                             "data": "The Deep DNAshape websever can be used for quickly checking 14 DNA shape features and 13 shape fluctuations for any sequences (one or many), using query tables pre-computed from <a href='https://www.nature.com/articles/s41467-024-45191-5'>Deep DNAshape</a> models. Compared to the deep learning model, using this webserver doesn't require downloading and installing tensorflow and running any codes. This web-server has pre-computed enough data from the Deep DNAshape model for instantaneously prediciton."},
                             {"type": "text",
-                             "data": "The Deep DNAshape webserver is an updated version of previous popular DNAshape webserver used to predict DNA shape features given one or more sequences. The previous webserver can still be found at <a href='https://rohslab.cmb.usc.edu/DNAshape/'>Old DNAShape Webserver</a>."},
+                             "data": "The Deep DNAshape webserver is an updated version of previous popular DNAshape webserver used to predict DNA shape features given one or more sequences. The previous webserver can still be found at <a href='https://rohslab.cmb.usc.edu/DNAshape/'>pentamer DNAShape Webserver</a>."},
                             {"type": "text",
                              "data": "DNA shape features are derived DNA structural parameters for quantitatively analysis of DNA structures. For detail informaiton about DNA shape features, please take a look at this <a href='https://academic.oup.com/nar/article-abstract/45/22/12877/4634013'>paper</a>. DNA shape fluctuation measures how easy the static DNA shape can be spontaneuosly altered, which indicates DNA flexibility in DNA shape level. The web server is able to predict 14 DNA shape features, including 2 DNA groove features, 6 intra-base-pair features and 6 inter-base-pair features; 13 DNA shape fluctuation features, excluding EP-FL."},
                             {"type": "image", "data": "DNAshape_explain2.png", "alt": "DNA shape features"}]
@@ -17,7 +17,7 @@
     "getting_started": {
         "title": "Getting Started",
         "subsections": {
-            "sub_intro2": {
+            "single_sequence": {
                 "title": "Single sequence",
                 "content": [{"type": "text", "data": "In the left text input box, input: "},
                             {"type": "text", "data": "ACGTCACGTGGTAG", "style": "dna-sequence"},
@@ -26,7 +26,7 @@
                             {"type": "image", "data": "first_example_shape.PNG", "alt": "The shape profile of the first example."},
                             {"type": "text", "data": "Now, we can edit the sequence by changing any position to another character from A, C, G, T and N. The right panel will reflect the change simultaneously. "}]
             },
-            "sub_intro3": {
+            "multi_sequence": {
                 "title": "Multiple sequences",
                 "content": [{"type": "text", "data": "Now let's try an example with multiple sequences. In the left text input box, input more sequences (each sequence per line). "},
                             {"type": "text", "data": "For example:"},
@@ -35,7 +35,7 @@
                             {"type": "image", "data": "multiple_sequences_example_shape.PNG", "alt": "Multiple sequences example"},
                             {"type": "text", "data": "Now, we can further edit the sequence by changing any position to another character from A, C, G, T and N, or add more sequences to compare. The right panel will reflect the change simultaneously. "}]
             },
-            "sub_intro4": {
+            "file_upload_download": {
                 "title": "File Upload and Download",
                 "content": [{"type": "text", "data": "Now let's try upload a text file containing a lot of DNA sequences. Create a .txt file with the following content: "},
                             {"type": "text", "data": "ACGTCACGTGGTAG\nACCTCACGTGATAG\nTTTTCACGTGCCAG\n", "style": "dna-sequence"},
@@ -47,7 +47,7 @@
     "input_data": {
         "title": "Input Data Format",
         "subsections": {
-            "sub_intro1": {
+            "sequence_input": {
                 "title": "Sequence Input",
                 "content": [{"type": "text", 
                              "data": "Only these characters (case sensetive) are allowed: A C G T N"},
@@ -55,9 +55,9 @@
                              "data": "Input any other characters will show a warning sign and the figure will not be updated."}
                            ]
             },
-            "sub_intro2": {
+            "file_input": {
                 "title": "File Input",
-                "content": [{"type": "text", "data": "If you want the server to directly predict a large file containing many sequences without showing you any figures, you can upload the .txt file."},
+                "content": [{"type": "text", "data": "If you want the server to directly predict a large file containing many sequences without showing you any figures, you can upload the .txt file. Alternatively, you can upload .fa or .fasta file to the server. The server will return a downloadble link in the data format but with .txt extension."},
                             {"type": "text", "data": "The .txt file should contain DNA sequences with only the characters as shown above (ACGTN). Each line should contain one sequence. The maximum number of lines is 1,000,000. Files longer than 1,000,000 lines should use Deep DNAshape python package instead (<a href='https://github.com/JinsenLi/deepDNAshape/'>Deep DNAshape</a>). "}]
             }
         }
@@ -65,20 +65,19 @@
     "parameter": {
         "title": "Advanced settings",
         "subsections": {
-            "sub_intro1": {
+            "layer": {
                 "title": "Layer Selection",
                 "content": [{"type": "text", 
-                             "data": "Users can select the shape layer values if they want to evaluate shorter or longer flanking influence. The shape layer number means how many base pairs does the model consider in the prediction on both of the 5' and 3' ends. For example, layer 4 means 9-mer query table for intra-base-pair features and groove features, and 10-mer query table for inter-base-pair features."},
-                             {"type": "image", "data": "layer.jpg", "alt": "The purpose of selecting layers."}
+                             "data": "Users can select the shape layer values if they want to evaluate shorter or longer flanking influence. The shape layer number means how many base pairs does the model consider in the prediction on both of the 5' and 3' ends. For example, layer 4 means 9-mer query table for intra-base-pair features and groove features, and 10-mer query table for inter-base-pair features."}
                            ]
             },
-            "sub_intro2": {
+            "shape_features": {
                 "title": "Shape Features",
                 "content": [{"type": "text", 
                              "data": "There are a lot of shape features this web server can predict. These shape features may sound complicated. For detailed understanding of these DNA shape features, refer to our <a href='https://academic.oup.com/nar/article-abstract/45/22/12877/4634013'>paper</a>."}
                             ]
             },
-            "sub_intro3": {
+            "shape_fluc": {
                 "title": "Shape Fluctuations",
                 "content": [{"type": "text", 
                              "data": "DNA shape fluctuations can also be predicted using this webserver. Simply select the checkbox \"For shape fluctuation values, check this box.\" then the figure will be updated to include the fluctuation values as error bars."},
@@ -90,7 +89,7 @@
     "vis_down": {
         "title": "Visualization and Downloading Data",
         "subsections": {
-            "sub_intro0": {
+            "plot_style": {
                 "title": "Plot style change",
                 "content": [{"type": "text", 
                              "data": "The regular plot is a collection of line plots for multiple sequence. If you are analyzing a lot of sequences, line plots may not be a best option. Therefore, the plot style can be changed to boxplot by one-click a button 'Toggle plot type' on the top action bar."},
@@ -102,7 +101,7 @@
                              "data": "box_plot.PNG", "alt":""}
                            ]
             },
-            "sub_intro1": {
+            "plot_custom": {
                 "title": "Plot Customization",
                 "content": [{"type": "text", 
                              "data": "Plot can be resized using the right bottom corner adjuster."},
@@ -116,7 +115,7 @@
                              "data": "Color coding explanation for multiple sequences."}
                            ]
             },
-            "sub_intro2": {
+            "downloading": {
                 "title": "Downloading Results",
                 "content": [{"type": "text", "data": "If you'd like to save the generated figure, simply click the first button on the top action bar \"Download plot as a png\"."},
                 {"type": "image", "data": "savefig.png", "alt": ""},
@@ -128,13 +127,13 @@
     "about": {
         "title": "About",
         "subsections": {
-            "sub_intro1": {
+            "development": {
                 "title": "Development Team",
                 "content": [{"type": "text", 
                              "data": "Rohs Lab @ USC"}
                            ]
             },
-            "sub_intro2": {
+            "version": {
                 "title": "Version History",
                 "content": [{"type": "text", "data": "v0.1. Release."}]
             }
